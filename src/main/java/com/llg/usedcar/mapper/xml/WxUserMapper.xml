@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.llg.usedcar.mapper.dao.WxUserMapper">
+
+
+    <update id="updateBusinessCard">
+      UPDATE usedcar.wx_users SET username = #{username}, sex = #{sex},
+        phone = #{phone} , update_time = #{updateTime} WHERE open_id = #{openId}
+    </update>
+
+    <select id="listUser" resultType="com.llg.usedcar.entity.WxUser">
+        select user_id userId, shop_id shopId, open_id openId,
+        wx_nick_name wxNickName, username, phone, create_time createTime, update_time updateTime
+        from wx_users
+        <where>
+            <if test="shopId != null">
+                shop_id = #{shopId}
+            </if>
+            <if test="userId != null">
+                user_id = #{userId}
+            </if>
+        </where>
+    </select>
+
+    <select id="myBusinessCard" resultType="com.llg.usedcar.entity.WxUser">
+         select user_id userId, shop_id shopId, open_id openId, sex,
+        wx_nick_name wxNickName, username, phone, create_time createTime, update_time updateTime
+        from wx_users where open_id = #{openid}
+    </select>
+
+    <select id="wxUserByOpenid" resultType="com.llg.usedcar.entity.WxUser">
+        select user_id userId, shop_id shopId, open_id openId, sex,
+        wx_nick_name wxNickName, username, phone, create_time createTime, update_time updateTime
+        from wx_users where open_id = #{openid}
+    </select>
+
+    <select id="getSessionByOpenid" resultType="com.llg.usedcar.entity.WxJscode2Session">
+      select session_id sessionId
+        ,session_key sessionKey
+        ,crypt_session_key cryptSessionKey
+        ,openid
+        ,expires_at expiresAt
+        ,expires_in expiresIn
+        ,create_time createTime
+        ,update_time updateTime
+      from wx_js_session where openid = #{openid}
+    </select>
+
+    <update id="updateSession">
+        update wx_js_session set session_key = #{sessionKey},
+        crypt_session_key = #{cryptSessionKey}, expires_in = #{expiresIn},
+        expires_at = #{expiresAt}, update_time = #{updateTime} where openid = #{openid}
+    </update>
+
+    <insert id="saveSession">
+        INSERT INTO usedcar.wx_js_session (session_id, session_key, crypt_session_key, openid, expires_in, expires_at, create_time, update_time)
+        VALUES (#{sessionId}, #{sessionKey}, #{cryptSessionKey},
+        #{openid}, #{expiresIn}, #{expiresAt}, #{createTime}, #{updateTime})
+    </insert>
+
+    <insert id="saveBusinessCard">
+        INSERT  into wx_users (user_id, shop_id, open_id, wx_nick_name, username, sex, phone, create_time, update_time)
+        VALUES (#{userId}, #{shopId}, #{openId}, #{wxNickName}, #{username}, #{sex}, #{phone}, #{createTime}, #{updateTime});
+    </insert>
+
+    <select id="getWxSession" resultType="com.llg.usedcar.entity.WxJscode2Session">
+        select j.session_id sessionId
+        ,j.session_key sessionKey
+        ,j.crypt_session_key cryptSessionKey
+        ,j.openid
+        ,j.expires_at expiresAt
+        ,j.expires_in expiresIn
+        ,j.create_time createTime
+        ,j.update_time updateTime
+        ,w.user_id userId
+      from wx_js_session j
+       LEFT JOIN wx_users w on w.open_id = j.openid
+       where j.crypt_session_key = #{thirdSession}
+    </select>
+
+</mapper>

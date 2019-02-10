@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.llg.usedcar.mapper.dao.ShopMapper">
+
+    <update id="updateShop">
+        UPDATE shop
+        <set>
+            <if test="shopName != null">
+                shop_name = #{shopName},
+            </if>
+            <if test="shopImage != null">
+                shop_image = #{shopImage},
+            </if>
+            <if test="address != null">
+                address = #{address},
+            </if>
+            <if test="telephone != null">
+                telephone = #{telephone},
+            </if>
+            <if test="linkMan != null">
+                link_man = #{linkMan},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+        </set>
+         WHERE shop_id = #{shopId};
+    </update>
+
+    <select id="getShopByShopId" resultType="com.llg.usedcar.entity.Shop">
+        select shop_id shopId, shop_name shopName, address,shop_image shopImage,
+        telephone, link_man linkName
+        from shop where shop_id = #{shopId}
+    </select>
+
+    <select id="getWxShopInfo" resultType="com.llg.usedcar.entity.Shop">
+      select s.shop_id shopId,shop_name shopName,shop_image shopImage
+          , address, telephone
+        from shop s,shop_app_info a
+        where s.shop_id = a.shop_id and a.appid = #{appid}
+    </select>
+
+    <select id="getShopAppInfo" resultType="com.llg.usedcar.entity.ShopAppInfo">
+        select appid, shop_id shopId, secret from shop_app_info where appid = #{appid}
+    </select>
+</mapper>

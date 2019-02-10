@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.llg.usedcar.mapper.dao.CarMapper">
+
+    <update id="updateCar">
+        UPDATE car_info
+        <set>
+            <if test="carName != null">
+                car_name = #{carName},
+            </if>
+            <if test="carPriceMin != null">
+                car_price_min = #{carPriceMin},
+            </if>
+            <if test="carPriceMax != null">
+                car_price_max = #{carPriceMax},
+            </if>
+            <if test="carSlogan != null">
+                car_slogan = #{carSlogan},
+            </if>
+            <if test="introduction != null">
+                introduction = #{introduction},
+            </if>
+            <if test="carStatus != null">
+                car_status = #{carStatus},
+            </if>
+            <if test="carIndex != null">
+                car_index = #{carIndex},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime}
+            </if>
+        </set>
+        WHERE car_id = #{carId}
+    </update>
+
+    <update id="changeMainImage">
+      update car_image c1, car_image c2
+        SET c1.is_main_img = 0,c2.is_main_img = 1
+        where c1.car_id = #{carId} and c1.is_main_img = 1 and c2.car_image_id = #{mainImageId}
+    </update>
+
+    <delete id="delCarImage">
+      DELETE from car_image where car_image_id in(${delCarImageIds})
+    </delete>
+
+    <insert id="wxCarAppoint">
+        INSERT INTO usedcar.appointment (appointment_id, car_id, user_id, shop_id, appointment_date, appointment_status, create_time, update_time)
+        VALUES (#{appointmentId}, #{carId}, #{userId}, #{shopId}, #{appointmentDate}, #{appointmentStatus}, #{createTime}, #{updateTime});
+    </insert>
+
+    <select id="carImageList" resultType="com.llg.usedcar.entity.CarImage">
+        select
+        car_image_id carImageId,
+        car_id carId,
+        url,
+        is_main_img isMainImg,
+        create_time crateTiem,
+        update_time from car_image
+        where car_id in (${carIds}) ORDER by is_main_img DESC, create_time
+    </select>
+
+    <insert id="addCar">
+        INSERT INTO usedcar.car_info (car_id, shop_id, car_name, car_price_min, car_price_max, car_slogan, introduction, car_status, car_index, create_time, update_time)
+        VALUES (#{carId}, #{shopId}, #{carName}, #{carPriceMin}, #{carPriceMax}, #{carSlogan}, #{introduction}, #{carStatus}, #{carIndex}, #{createTime}, #{updateTime});
+    </insert>
+
+    <select id="getCarMainImage" resultType="com.llg.usedcar.entity.CarImage">
+        SELECT car_image_id carImageId, url
+        from car_image where car_id = #{carId} and is_main_img = '1'
+    </select>
+
+    <insert id="saveCarImgInfo">
+        INSERT INTO car_image (car_image_id, car_id, url, is_main_img, create_time, update_time)
+        VALUES (#{carImageId}, #{carId}, #{url}, #{isMainImg}, #{createTime}, #{updateTime});
+    </insert>
+
+    <select id="listCar" resultType="com.llg.usedcar.entity.Car">
+        select car_id carId, shop_id shopId, car_name carName, car_price_min carPriceMin,
+            car_price_max carPriceMax, car_slogan carSlogan, introduction, car_status carStatus,
+            car_index carIndex, create_time createTime, update_time updateTime
+        from car_info where shop_id = #{shopId}
+        <if test="carName != null and carName != ''">
+            and car_name like concat('%',#{carName},'%')
+        </if>
+        <if test="carStatus != null">
+            and car_status = #{carStatus}
+        </if>
+        order by carStatus
+
+    </select>
+
+    <select id="wxListCar" resultType="com.llg.usedcar.entity.Car">
+        select c.car_id carId, c.shop_id shopId, c.car_name carName, c.car_price_min carPriceMin,
+            c.car_price_max carPriceMax, c.car_slogan carSlogan, c.introduction, c.car_status carStatus,
+            c.car_index carIndex, c.create_time createTime, c.update_time updateTime, i.url mainImage
+        from car_info c LEFT JOIN car_image i on c.car_id = i.car_id and is_main_img = '1'
+         where shop_id = #{shopId} and car_status = 2 order by car_index desc
+    </select>
+
+    <select id="wxCarDetail" resultType="com.llg.usedcar.entity.Car">
+        select c.car_id carId, c.shop_id shopId, c.car_name carName, c.car_price_min carPriceMin,
+            c.car_price_max carPriceMax, c.car_slogan carSlogan, c.introduction, c.car_status carStatus,
+            c.car_index carIndex, c.create_time createTime, c.update_time updateTime, a.appointment_id appointmentId
+            , a.appointment_date appointmentDate, a.appointment_status appointmentStatus,
+            (select max(appointment_date) from appointment aa where aa.car_id = c.car_id and appointment_status in(1,2) and user_id = #{userId}) maxAppointmentDate
+        from car_info c LEFT join appointment a on c.car_id = a.car_id
+        and a.user_id = #{userId} and a.appointment_id = #{appointmentId}
+        where c.car_id = #{carId}
+    </select>
+
+
+</mapper>

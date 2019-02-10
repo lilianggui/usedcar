@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.llg.usedcar.mapper.dao.AppointmentMapper">
+    <update id="invalidAppointment">
+       update appointment set appointment_status = 3 where appointment_id = #{appointmentId}
+    </update>
+
+    <update id="effectAppointment">
+       update appointment set appointment_status = 2
+       ,appointment_date = #{appointmentDate}
+       where appointment_id = #{appointmentId}
+    </update>
+
+    <update id="cancelAppoint">
+      update appointment set appointment_status = 4 where appointment_id = #{appointmentId}
+    </update>
+
+    <update id="changeAppointDate">
+        update appointment set appointment_date = #{appointmentDate} where appointment_id = #{appointmentId}
+    </update>
+
+    <select id="listAppointment" resultType="com.llg.usedcar.entity.Appointment">
+      SELECT
+        a.appointment_id appointmentId,
+          a.user_id userId,
+          w.username,
+          w.phone,
+          w.sex,
+          a.appointment_date appointmentDate,
+          a.appointment_date appointmentShortDate,
+          a.appointment_status appointmentStatus,
+          c.car_name carName
+        from appointment a LEFT JOIN wx_users w on a.user_id = w.user_id
+        LEFT JOIN car_info c on a.car_id = c.car_id
+        where w.shop_id = #{shopId} order by a.appointment_status, a.create_time desc
+    </select>
+
+  <select id="appointmentRemind" resultType="com.llg.usedcar.entity.Appointment">
+      SELECT a.appointment_id appointmentId,
+          a.user_id userId,
+          w.username,
+          w.phone,
+          w.sex,
+          a.appointment_date appointmentDate,
+          a.appointment_date appointmentShortDate,
+          a.appointment_status appointmentStatus,
+          c.car_name carName
+        from appointment a LEFT JOIN wx_users w on a.user_id = w.user_id
+        LEFT JOIN car_info c on a.car_id = c.car_id
+        where w.shop_id = #{shopId} and appointment_status = 2 and  appointment_date >= DATE_SUB(now(),INTERVAL 2 HOUR)
+    </select>
+
+    <select id="myAppointList" resultType="com.llg.usedcar.entity.Appointment">
+        select a.appointment_id appointmentId, a.car_id carId, a.user_id userId, a.shop_id shopId,
+        a.appointment_date appointmentDate, a.appointment_status appointmentStatus,
+        a.create_time createTime, a.update_time updateTime, c.car_name carName,
+        c.car_price_min carPriceMin, c.car_price_max carPriceMax, i.url mainImage
+         from appointment a
+         LEFT JOIN car_info c on a.car_id = c.car_id
+         LEFT JOIN car_image i on c.car_id = i.car_id and is_main_img = '1'
+         where user_id = #{userId} order by a.appointment_status, a.create_time
+    </select>
+</mapper>

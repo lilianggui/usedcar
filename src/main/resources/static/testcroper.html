@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="https://libs.baidu.com/jquery/1.10.2/jquery.min.js"></script>
+    <!--<link  href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.4.3/cropper.min.css" rel="stylesheet">-->
+    <!--<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.4.3/cropper.min.js"></script>-->
+    <link  href="./lib/cropper/cropper.css" rel="stylesheet">
+    <script src="./lib/cropper/cropper.js"></script>
+</head>
+<body>
+
+    <div>
+        <div class="container" style="width: 1000px;height: 800px">
+
+        </div>
+        <input type="file" id="file_upload">
+        <div style="text-align: center">
+            <button>完成</button>
+        </div>
+    </div>
+
+    <div class="small" style="width: 320px; height: 180px; overflow: hidden">
+    </div>
+</body>
+<script>
+
+    $("#file_upload").change(function () {
+        $('.container').empty()
+        var $img = $("<img id='img' src=''>");
+        $('.container').append($img);
+        $img.attr('src', '');
+        var $file = $(this);
+        var fileObj = $file[0];
+        var windowURL = window.URL || window.webkitURL;
+        var dataURL;
+
+
+        if (fileObj && fileObj.files && fileObj.files[0]) {
+            console.log(1233333);
+            dataURL = windowURL.createObjectURL(fileObj.files[0]);
+            $img.attr('src', dataURL);
+        } else {
+            dataURL = $file.val();
+            var imgObj = document.getElementById("preview");
+            // 两个坑:
+            // 1、在设置filter属性时，元素必须已经存在在DOM树中，动态创建的Node，也需要在设置属性前加入到DOM中，先设置属性在加入，无效；
+            // 2、src属性需要像下面的方式添加，上面的两种方式添加，无效；
+            imgObj.style.filter = "progid:DXImageTransform.Microsoft.AlphaImageLoader(sizingMethod=scale)";
+            imgObj.filters.item("DXImageTransform.Microsoft.AlphaImageLoader").src = dataURL;
+
+        }
+
+        $img.cropper({
+            aspectRatio: 16 / 9,
+            preview:".small",
+            crop: function(event) {
+                console.log(event.detail.x);
+                console.log(event.detail.y);
+                console.log(event.detail.width);
+                console.log(event.detail.height);
+                console.log(event.detail.rotate);
+                console.log(event.detail.scaleX);
+                console.log(event.detail.scaleY);
+            }
+        });
+
+    });
+
+</script>
+</html>
